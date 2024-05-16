@@ -34,12 +34,17 @@ public class MapTest {
             in.close();
             conn.disconnect();
 
-            return JsonParser.parseString(response.toString()).getAsJsonObject();
+            JsonObject jsonResponse = JsonParser.parseString(response.toString()).getAsJsonObject();
+            // JSON 응답 로그 출력
+            System.out.println("API Response: " + jsonResponse.toString());
+
+            return jsonResponse;
         } else {
             conn.disconnect();
             throw new IOException("HTTP error code: " + responseCode);
         }
     }
+
     public static class CoordinateConverter {
         private static final double RE = 6371.00877; // 지구 반경(km)
         private static final double GRID = 5.0; // 격자 간격(km)

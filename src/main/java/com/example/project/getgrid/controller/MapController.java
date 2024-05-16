@@ -25,18 +25,31 @@ public class MapController {
 
             // 주소 검색 결과 가져오기
             JsonObject addressInfo = mapTest.searchAddress(address);
-            double latitude = addressInfo.getAsJsonObject("addresses").getAsJsonArray("x").get(0).getAsDouble();
-            double longitude = addressInfo.getAsJsonObject("addresses").getAsJsonArray("y").get(0).getAsDouble();
-            int[] grid = coordinateConverter.toGrid(latitude, longitude);
+            if (addressInfo != null) {
+                // addressInfo 로그 출력
+                System.out.println("Address Info: " + addressInfo.toString());
 
-            // 가져온 정보를 모델에 추가
-            model.addAttribute("latitude", latitude);
-            model.addAttribute("longitude", longitude);
-            model.addAttribute("gridX", grid[0]);
-            model.addAttribute("gridY", grid[1]);
+                if (addressInfo.has("addresses") && addressInfo.getAsJsonArray("addresses").size() > 0) {
+                    JsonObject firstAddress = addressInfo.getAsJsonArray("addresses").get(0).getAsJsonObject();
+                    double latitude = firstAddress.get("y").getAsDouble();
+                    double longitude = firstAddress.get("x").getAsDouble();
+                    int[] grid = coordinateConverter.toGrid(latitude, longitude);
+
+                    // 가져온 정보를 모델에 추가
+                    model.addAttribute("latitude", latitude);
+                    model.addAttribute("longitude", longitude);
+                    model.addAttribute("gridX", grid[0]);
+                    model.addAttribute("gridY", grid[1]);
+                } else {
+                    model.addAttribute("error", "검색 결과가 없습니다.");
+                }
+            } else {
+                model.addAttribute("error", "주소 정보를 불러올 수 없습니다.");
+            }
         } catch (Exception e) {
             // 오류 처리
-            model.addAttribute("error", "검색 중 오류가 발생했습니다.");
+            e.printStackTrace();  // 콘솔에 예외 스택 트레이스를 출력하여 디버깅에 도움
+            model.addAttribute("error", "검색 중 오류가 발생했습니다: " + e.getMessage());
         }
         return "search-result";
     }
